@@ -1,7 +1,3 @@
-package is18289592;
-
-
-
 import javax.swing.*; // JOptionPane library
 import java.util.ArrayList;
 import java.util.HashSet;
