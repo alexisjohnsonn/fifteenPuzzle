@@ -53,6 +53,7 @@ public class is18285287{
                 retVal.add(scanner.nextInt());
                 count++;
             }
+            scanner.close();
 
             // if count != size+1, then there are not enough values in the input string
             // if scanner.hasNextInt(), then there are too many values in the input string
@@ -118,36 +119,6 @@ public class is18285287{
         return isValid;
     }
     
-    public static void printMoves(){
-    	int idx = init.indexOf(0);
-    	int emptyRow = getRow(idx);
-    	int emptyCol = getCol(idx);
-    	
-    	// above
-    	int above = emptyRow - 1; // move is legal if above > 0
-    	if(above > 0){
-    		System.out.println(init.get(idx - dimension) + " to the south");
-    	}
-    	
-    	// below
-    	int below = emptyRow + 1; // move is legal if below < dimension
-    	if(below < dimension){
-    		System.out.println(init.get(idx + dimension) + " to the north");
-    	}
-    	
-    	// left
-    	int left = emptyCol - 1; // move is legal if left > 0
-    	if(left > 0){
-    		System.out.println(init.get(idx-1));
-    	}
-    	
-    	// right
-    	int right = emptyCol +1; // move is legal if right < dimension
-    	if(right < dimension){
-    		System.out.println(init.get(idx+1));
-    	}
-    }
-    
     public static int getRow(int idx){
     	return idx / dimension;
     }
@@ -156,8 +127,34 @@ public class is18285287{
     	return idx % dimension;
     }
     
-    public static void getMoves(ArrayList<Integer> current){
+    public static void getMoves(ArrayList<Integer> currentState){
+    	int idx = currentState.indexOf(0);
+    	int emptyRow = getRow(idx);
+    	int emptyCol = getCol(idx);
     	
+    	// above
+    	int above = emptyRow - 1; // move is legal if above > 0
+    	if(above > 0){
+    		System.out.println(currentState.get(idx - dimension) + " to the south");
+    	}
+    	
+    	// below
+    	int below = emptyRow + 1; // move is legal if below < dimension
+    	if(below < dimension){
+    		System.out.println(currentState.get(idx + dimension) + " to the north");
+    	}
+    	
+    	// left
+    	int left = emptyCol - 1; // move is legal if left > 0
+    	if(left > 0){
+    		System.out.println(currentState.get(idx-1) + " to the east");
+    	}
+    	
+    	// right
+    	int right = emptyCol +1; // move is legal if right < dimension
+    	if(right < dimension){
+    		System.out.println(currentState.get(idx+1) + " to the west");
+    	}
     }
 
     public static void main(String args[])
