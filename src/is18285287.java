@@ -96,7 +96,7 @@ public class is18285287{
 
     private static boolean uniqueIntegers(ArrayList<Integer> arr)
     {
-        HashSet set = new HashSet<Integer>();
+        HashSet<Integer> set = new HashSet<>();
         int i = 0;
         boolean isValid = true;
         while (i<size+1 && isValid)
@@ -157,7 +157,7 @@ public class is18285287{
         // assuming the puzzle is a square, the vertical and horizontal dimensions are the same
         int dimension = (int) Math.sqrt(current.size());
 
-        // totalDist cumulates the distance of each tile, giving h
+        // totalDist accumulates the distance of each tile, giving h
         int totalDist = 0;
 
         for(int i = 1; i < current.size(); i++){
