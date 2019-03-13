@@ -1,3 +1,5 @@
+package is18289592;
+
 
 
 import javax.swing.*; // JOptionPane library
@@ -11,6 +13,7 @@ public class is18285287{
     private static int size = 8;
     private static ArrayList<Integer> init;
     private static ArrayList<Integer> goal;
+    private static int dimension;
 
     private static void setUpGame()
     {
@@ -19,7 +22,8 @@ public class is18285287{
         init = getStateFromUserInput(initMessage);
         String goalMessage = "Now, enter a final state.";
         goal = getStateFromUserInput(goalMessage);
-
+		dimension = (int) Math.sqrt(size+1);
+        
     }
 
     private static ArrayList<Integer> getStateFromUserInput(String message)
@@ -66,6 +70,32 @@ public class is18285287{
 
         return retVal;
     }
+    
+    private static int calculateH(ArrayList<Integer> testState){
+		// totalDist cumulates the distance of each tile, giving h
+		int totalDist = 0;
+		
+		for(int i = 1; i < testState.size(); i++){
+			// find the index of tile i in the current state
+			int curIdx = testState.indexOf(i);
+			
+			// find the index of tile i in the goal state
+			int goalIdx = goal.indexOf(i);
+			
+			// a piece's column is given by its index in the array % the number of columns,
+			// so number of horizontal moves is given by the difference between the current and goal columns
+			int horizMoves = Math.abs((getCol(curIdx)) - (getCol(goalIdx)));
+			
+			// a piece's row is given by its index in the array / the number of rows,
+			// so number of vertical moves is given by the difference between the current and goal rows
+			int vertMoves = Math.abs((getRow(curIdx)) - (getRow(goalIdx)));
+			
+			totalDist += horizMoves + vertMoves;
+			
+		}
+		
+		return totalDist;
+    }
 
     private static boolean uniqueIntegers(ArrayList<Integer> arr)
     {
@@ -86,6 +116,48 @@ public class is18285287{
             i++;
         }
         return isValid;
+    }
+    
+    public static void printMoves(){
+    	int idx = init.indexOf(0);
+    	int emptyRow = getRow(idx);
+    	int emptyCol = getCol(idx);
+    	
+    	// above
+    	int above = emptyRow - 1; // move is legal if above > 0
+    	if(above > 0){
+    		System.out.println(init.get(idx - dimension) + " to the south");
+    	}
+    	
+    	// below
+    	int below = emptyRow + 1; // move is legal if below < dimension
+    	if(below < dimension){
+    		System.out.println(init.get(idx + dimension) + " to the north");
+    	}
+    	
+    	// left
+    	int left = emptyCol - 1; // move is legal if left > 0
+    	if(left > 0){
+    		System.out.println(init.get(idx-1));
+    	}
+    	
+    	// right
+    	int right = emptyCol +1; // move is legal if right < dimension
+    	if(right < dimension){
+    		System.out.println(init.get(idx+1));
+    	}
+    }
+    
+    public static int getRow(int idx){
+    	return idx / dimension;
+    }
+    
+    public static int getCol(int idx){
+    	return idx % dimension;
+    }
+    
+    public static void getMoves(ArrayList<Integer> current){
+    	
     }
 
     private static int calculateH(ArrayList<Integer> current, ArrayList<Integer> goal){
