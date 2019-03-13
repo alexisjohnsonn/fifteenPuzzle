@@ -1,3 +1,5 @@
+package is18289592;
+
 
 
 import javax.swing.*; // JOptionPane library
@@ -65,6 +67,35 @@ public class is18285287{
         }
 
         return retVal;
+    }
+    
+    private static int calculateH(ArrayList<Integer> current, ArrayList<Integer> goal){
+    	// assuming the puzzle is a square, the veritcal and horizontal dimensions are the same
+		int dimension = (int) Math.sqrt(current.size());
+
+		// totalDist cumulates the distance of each tile, giving h
+		int totalDist = 0;
+		
+		for(int i = 1; i < current.size(); i++){
+			// find the index of tile i in the current state
+			int curIdx = current.indexOf(i);
+			
+			// find the index of tile i in the goal state
+			int goalIdx = goal.indexOf(i);
+			
+			// a piece's column is given by its index in the array % the number of columns,
+			// so number of horizontal moves is given by the difference between the current and goal columns
+			int horizMoves = Math.abs((curIdx % dimension) - (goalIdx % dimension));
+			
+			// a piece's row is given by its index in the array / the number of rows,
+			// so number of vertical moves is given by the difference between the current and goal rows
+			int vertMoves = Math.abs((curIdx / dimension) - (goalIdx / dimension));
+			
+			totalDist += horizMoves + vertMoves;
+			
+		}
+		
+		return totalDist;
     }
 
     private static boolean uniqueIntegers(ArrayList<Integer> arr)
