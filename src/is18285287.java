@@ -1,5 +1,6 @@
 import javax.swing.*; // JOptionPane library
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Scanner;
 
@@ -49,7 +50,6 @@ public class is18285287{
                 retVal.add(scanner.nextInt());
                 count++;
             }
-            scanner.close();
 
             // if count != size+1, then there are not enough values in the input string
             // if scanner.hasNextInt(), then there are too many values in the input string
@@ -63,8 +63,8 @@ public class is18285287{
             {
                 inputValidated = true;
             }
+            scanner.close();
         }
-
         return retVal;
     }
     
@@ -182,10 +182,19 @@ public class is18285287{
         return totalDist;
     }
 
+    // curIdx is the current index of the 0 tile. newIdx is the new index of the 0 tile in the next move
+    private static ArrayList<Integer> move(ArrayList<Integer> currentMove, int curIdx, int newIdx)
+    {
+        ArrayList<Integer> nextMove = new ArrayList<>(currentMove);
+        Collections.swap(nextMove, curIdx, newIdx);
+        return nextMove;
+    }
+
+
+
     public static void main(String args[])
     {
         setUpGame();
     }
-
 }
 
