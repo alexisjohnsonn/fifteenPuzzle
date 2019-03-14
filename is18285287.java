@@ -16,6 +16,11 @@ public class is18285287{
     private static ArrayList<Integer> goal;
     private static int dimension;
 
+    /*****************************
+     * 
+     * setUpGame begins the game, calls getStateFromUserInput to populate initial and goal states
+     * 
+     *****************************/
     private static void setUpGame()
     {
         frame = new JFrame();
@@ -26,7 +31,18 @@ public class is18285287{
 		dimension = (int) Math.sqrt(size+1);
         
     }
-
+    
+    /*****************************
+     * 
+     * getStateFromUserInput instantiates JFrame windows and retrieves user input
+     * 
+     * @Parameters:
+     * 	message: String indicating what the user should enter. Shows error message if invalid input was entered
+     * 
+     * @Returns:
+     * 	retVal: ArrayList populated by user input
+     * 
+     *****************************/
     private static ArrayList<Integer> getStateFromUserInput(String message)
     {
         String instructions = String.format(" This should be entered as a unique sequence of the numbers 0 through %d, with 0 indicating the empty tile. " +
@@ -72,6 +88,51 @@ public class is18285287{
         return retVal;
     }
     
+    /*****************************
+     * 
+     * uniqueIntegers validates that the arr is an ArrayList of unique Integers.
+     * Called in getStateFromUserInput
+     * 
+     * @Parameters:
+     * 	arr: Board state to test uniqueness of
+     * 
+     * @Returns:
+     * 	isValid: boolean - true if arr only contains unique integers, false otherwise
+     * 
+     *****************************/
+    private static boolean uniqueIntegers(ArrayList<Integer> arr)
+    {
+        HashSet<Integer> set = new HashSet<>();
+        int i = 0;
+        boolean isValid = true;
+        while (i<size+1 && isValid)
+        {
+            Integer cur = arr.get(i);
+            if (set.contains(cur) || cur<0 || cur>size)
+            {
+                isValid = false;
+            }
+            else
+            {
+                set.add(cur);
+            }
+            i++;
+        }
+        return isValid;
+    }
+    
+    /*****************************
+     * 
+     * calculateH performs calculation on given testState to estimate the heuristic value h,
+     * 	which is the total distance of all pieces in their current state to their goal state
+     * 
+     * @Parameters:
+     * 	testState: the given board state for which h will be calculated
+     * 
+     * @Returns:
+     * 	totalDist: heuristic h, the total distance of all pieces to their goal state from state testState
+     * 
+     *****************************/
     private static int calculateH(ArrayList<Integer> testState){
 		// totalDist cumulates the distance of each tile, giving h
 		int totalDist = 0;
@@ -97,36 +158,47 @@ public class is18285287{
 		
 		return totalDist;
     }
-
-    private static boolean uniqueIntegers(ArrayList<Integer> arr)
-    {
-        HashSet<Integer> set = new HashSet<>();
-        int i = 0;
-        boolean isValid = true;
-        while (i<size+1 && isValid)
-        {
-            Integer cur = arr.get(i);
-            if (set.contains(cur) || cur<0 || cur>size)
-            {
-                isValid = false;
-            }
-            else
-            {
-                set.add(cur);
-            }
-            i++;
-        }
-        return isValid;
-    }
     
+    /*****************************
+     * 
+     * getRow calculates the row of the given index idx based on the dimensions of the game
+     * 
+     * @Parameters:
+     * 	idx: the index of the tile to be calculated
+     * 
+     * @Returns:
+     * 	row of idx, assuming topmost row is 0
+     * 
+     *****************************/
     public static int getRow(int idx){
     	return idx / dimension;
     }
     
+    /*****************************
+     * 
+     * getCol calculates the column of the given index idx based on the dimensions of the game
+     * 
+     * @Parameters:
+     * 	idx: the index of the tile to be calculated
+     * 
+     * @Returns:
+     * 	column of idx, assuming leftmost column is 0
+     * 
+     *****************************/
     public static int getCol(int idx){
     	return idx % dimension;
     }
     
+    /*****************************
+     * 
+     * getMoves takes a given board state and identifies legal moves
+     * then calls calculateH to find the heuristic h for the move
+     * based on the global goal state, goal
+     * 
+     * @Parameters:
+     * 	currentState: the state whose legal moves will be identified
+     * 
+     *****************************/
     public static void getMoves(ArrayList<Integer> currentState){
     	int idx = currentState.indexOf(0);
     	int emptyRow = getRow(idx);
@@ -165,6 +237,19 @@ public class is18285287{
     	}
     }
 
+    /*****************************
+     * 
+     * move performs the game move on the board state currentMove
+     * 
+     * @Parameters:
+     * 	currentMove: the current board state
+     * 	curIdx: the current index of the empty space
+     * 	newIdx: the index of the piece which is being moved
+     * 
+     * @Returns:
+     * 	nextMove: a boardstate where the move indicated by curIdx and newIdx was made
+     * 
+     *****************************/
     // curIdx is the current index of the 0 tile. newIdx is the new index of the 0 tile in the next move
     private static ArrayList<Integer> move(ArrayList<Integer> currentMove, int curIdx, int newIdx)
     {
@@ -173,63 +258,10 @@ public class is18285287{
         return nextMove;
     }
 
-    private static void printState(ArrayList<Integer> current){
-		// TODO seriously
-		System.out.println("Initial:");
-		for(int i = 0; i <= current.size() - dimension; i+=dimension){
-			System.out.print(current.get(i) + "  ");
-			System.out.print(current.get(i+1) + "  ");
-			System.out.println(current.get(i+2) + "  ");
-//			System.out.println(current.get(i+3));
-		}
-		System.out.println();
-    }
-
-
     public static void main(String args[])
     {
-        // setUpGame();
-    	
-    	dimension = 3;
-    	
-    	goal = new ArrayList<>();
-    	goal.add(1);
-    	goal.add(2);
-    	goal.add(3);
-    	goal.add(4);
-    	goal.add(5);
-    	goal.add(6);
-    	goal.add(7);
-    	goal.add(8);
-//		goal.add(9);
-//		goal.add(10);
-//		goal.add(11);
-//		goal.add(12);
-//		goal.add(13);
-//		goal.add(14);
-//		goal.add(15);
-    	goal.add(0);
-    	
-		ArrayList<Integer> current = new ArrayList<>();
-		current.add(4);
-		current.add(2);
-		current.add(3);
-		current.add(1);
-		current.add(5);
-		current.add(9);
-		current.add(7);
-		current.add(8);
-		current.add(0);
-//		current.add(11);
-//		current.add(10);
-//		current.add(12);
-//		current.add(13);
-//		current.add(15);
-//		current.add(14);
-//		current.add(0);
+        setUpGame();
 		
-		printState(current);
-    	
-        getMoves(current);
+        getMoves(init);
     }
 }
