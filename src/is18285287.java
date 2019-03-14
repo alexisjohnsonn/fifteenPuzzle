@@ -184,48 +184,10 @@ public class is18285287{
 
     public static void main(String args[])
     {
-        // setUpGame();
-
-        dimension = 3;
-
-        goal = new ArrayList<>();
-        goal.add(1);
-        goal.add(2);
-        goal.add(3);
-        goal.add(4);
-        goal.add(5);
-        goal.add(6);
-        goal.add(7);
-        goal.add(8);
-//		goal.add(9);
-//		goal.add(10);
-//		goal.add(11);
-//		goal.add(12);
-//		goal.add(13);
-//		goal.add(14);
-//		goal.add(15);
-        goal.add(0);
-
-        ArrayList<Integer> current = new ArrayList<>();
-        current.add(4);
-        current.add(2);
-        current.add(3);
-        current.add(1);
-        current.add(5);
-        current.add(9);
-        current.add(7);
-        current.add(8);
-        current.add(0);
-//		current.add(11);
-//		current.add(10);
-//		current.add(12);
-//		current.add(13);
-//		current.add(15);
-//		current.add(14);
-//		current.add(0);
-
-        printState(current);
-
-        getMoves(current);
+        setUpGame();
+		
+		printState(init);
+    	
+        getMoves(init);
     }
 }
