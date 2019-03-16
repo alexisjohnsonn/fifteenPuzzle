@@ -172,7 +172,31 @@ public class test{
     public static void main(String args[])
     {
         setUpGame();
-        aStarAlgorithm();
+        BoardStateNode solution = aStarAlgorithm();
+        String printedSolution = "";
+        BoardStateNode current = solution;
+       while(current!= null)
+        {
+            printedSolution = printState(current) + printedSolution;
+            current = current.prev;
+        }
+
+        System.out.println("Results: \n" + printedSolution);
+    }
+
+    public static String printState(BoardStateNode node)
+    {
+        String result = "H: " + node.h + ", G: " + node.g + ", F: " + node.getF() + "\n";
+        for (int i = 0; i<size+1; i+= dimension)
+        {
+            for (int j=i; j<i + dimension; j++)
+            {
+                result += node.state.get(j) + "   ";
+            }
+            result += "\n";
+        }
+        result += "\n\n";
+        return result;
     }
 
 
@@ -204,7 +228,7 @@ public class test{
             if(emptyRow - 1 >= 0)
             {
                 ArrayList<Integer> succ = switchTiles(state, emptyIdx, emptyIdx - dimension);
-                if (!this.prev.state.equals(succ))
+                if (this.prev == null || !this.prev.state.equals(succ))
                 {
                     list.add(succ);
                 }
@@ -214,7 +238,7 @@ public class test{
             if(emptyRow + 1 < dimension)
             {
                 ArrayList<Integer> succ = switchTiles(state, emptyIdx, emptyIdx + dimension);
-                if (!this.prev.state.equals(succ))
+                if (this.prev == null || !this.prev.state.equals(succ))
                 {
                     list.add(succ);
                 }
@@ -224,7 +248,7 @@ public class test{
             if(emptyCol - 1 >= 0)
             {
                 ArrayList<Integer> succ = switchTiles(state, emptyIdx, emptyIdx - 1);
-                if (!this.prev.state.equals(succ))
+                if (this.prev== null || !this.prev.state.equals(succ))
                 {
                     list.add(succ);
                 }
@@ -234,7 +258,7 @@ public class test{
             if(emptyCol +1 < dimension)
             {
                 ArrayList<Integer> succ = switchTiles(state, emptyIdx, emptyIdx + 1);
-                if (!this.prev.state.equals(succ))
+                if (this.prev == null || !this.prev.state.equals(succ))
                 {
                     list.add(succ);
                 }
