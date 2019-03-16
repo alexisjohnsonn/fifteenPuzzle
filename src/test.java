@@ -126,8 +126,10 @@ public class test{
 
     private static BoardStateNode aStarAlgorithm()
     {
+        // customized priority queue for BoardStateNode objects
         BSNPriorityQueue open = new BSNPriorityQueue();
         BSNPriorityQueue closed = new BSNPriorityQueue();
+        // add initial state to the open list
         open.add(new BoardStateNode(init, null, calculateH(init), 0));
 
         while (!open.isEmpty())
@@ -140,51 +142,35 @@ public class test{
                 return current;
             }
 
+            // else, generate successors from current
             List<ArrayList<Integer>> successors = current.getSuccessors();
+            // iterator over successors
             for (ArrayList<Integer> nextState : successors)
             {
-                int nextG = current.g + 1;
-                if (open.contains(nextState) && open.getNodeForState(nextState).g <= nextG)
-                {
-                    // discard nextState, since there is already a better heuristic value for it in open
-                    continue;
-                }
-                else if (closed.contains(nextState) && closed.getNodeForState(nextState).g <= nextG)
-                {
-                    // discard nextState, since there is already a better heuristic value for it in closed
-                    continue;
-                }
-                else
+                // g value of nextState from the current path
+                int g = current.g + 1;
+                // check if open contains this state. if it does, see if it has the lower g value
+                boolean openContainsBetterHeuristic = open.contains(nextState) && open.getNodeForState(nextState).g <= g;
+                // check if closed contains this state. if it does, see if it has the lower g value
+                boolean closedContainsBetterHeuristic = closed.contains(nextState) && closed.getNodeForState(nextState).g <= g;
+
+                // if neither the open or closed list have a better path for this state, remove it from closed and re-add it to open
+                // using the new heuristic value
+                if (!openContainsBetterHeuristic && !closedContainsBetterHeuristic)
                 {
                     open.remove(nextState);
                     closed.remove(nextState);
-                    open.add(new BoardStateNode(nextState, current, calculateH(nextState), nextG));
+                    open.add(new BoardStateNode(nextState, current, calculateH(nextState), g));
                 }
             }
             // add current to closed list
             closed.add(current);
         }
-
+        // if this reached, all possible states were searched and the solution was not found. the puzzle is therefore unsolvable
         return null;
     }
 
-
-    public static void main(String args[])
-    {
-        setUpGame();
-        BoardStateNode solution = aStarAlgorithm();
-        String printedSolution = "";
-        BoardStateNode current = solution;
-       while(current!= null)
-        {
-            printedSolution = printState(current) + printedSolution;
-            current = current.prev;
-        }
-
-        System.out.println("Results: \n" + printedSolution);
-    }
-
-    public static String printState(BoardStateNode node)
+    private static String printState(BoardStateNode node)
     {
         String result = "H: " + node.h + ", G: " + node.g + ", F: " + node.getF() + "\n";
         for (int i = 0; i<size+1; i+= dimension)
@@ -200,7 +186,31 @@ public class test{
     }
 
 
+    public static void main(String args[])
+    {
+        setUpGame();
+        BoardStateNode solution = aStarAlgorithm();
+        String printedSolution = "";
+        BoardStateNode current = solution;
+        if (current == null)
+        {
+            System.out.println("No solution.");
+        }
+        else
+        {
+            while(current!= null)
+            {
+                printedSolution = printState(current) + printedSolution;
+                current = current.prev;
+            }
+
+            System.out.println("Results: \n" + printedSolution);
+        }
+    }
+
+
     // for each state, maintain an ArrayList with the integers in the state and the state's h, g, and f values
+    // BoardStateNode must implement Comparable for use in the PriorityQueue
     public static class BoardStateNode implements Comparable
     {
         public ArrayList<Integer> state;
@@ -272,6 +282,8 @@ public class test{
             return h+g;
         }
 
+        // when comparing two BoardStateNode objects, just compare their f values
+        // this sets up the PriorityQueue to sort based on f(n)
         public int compareTo(Object x)
         {
 
@@ -298,6 +310,7 @@ public class test{
             new PriorityQueue<>();
         }
 
+        // see if any of the BoardStateNodes in the PriorityQueue contain the given state
         public boolean contains(ArrayList<Integer> state)
         {
             Iterator it = this.iterator();
@@ -316,6 +329,8 @@ public class test{
             return false;
         }
 
+        // given a state, return the associated BoardStateNode in the PriorityQueue
+        // if no such node exists, return null
         public BoardStateNode getNodeForState(ArrayList<Integer> state)
         {
             Iterator it = this.iterator();
@@ -334,6 +349,8 @@ public class test{
             return null;
         }
 
+        // remove the node containing the given state
+        // return a boolean to indicate success
         public boolean remove(ArrayList<Integer> state)
         {
             Iterator it = this.iterator();
