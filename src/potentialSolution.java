@@ -1,7 +1,7 @@
 import javax.swing.*; // JOptionPane library
 import java.util.*;
 
-public class solution{
+public class potentialSolution{
 
     private static JFrame frame;
     private static int size = 8;
