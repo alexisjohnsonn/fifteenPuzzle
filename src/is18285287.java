@@ -1,28 +1,72 @@
+/**************************************
+ * 
+ * N-Puzzle Solver
+ * 
+ * By: Alexis Johnson		18285287
+ *     Victor Guerra		18289592
+ *     Sabelle O'Connell	18274471
+ * 
+ * For CS4006 Intelligent Systems
+ *     University of Limerick
+ *     10 April 2019
+ * 
+ * This is the final submission for the N-Puzzle Solver for CS4006 at UL.
+ * This version has a user input the size of the puzzle as either 8 or 15,
+ *  then accepts user input of an initial and goal state,
+ * 	then validates the inputs as unique and consecutive starting at 0.
+ * From the user inputted states, this program identifies all possible
+ * 	moves which can be made next, and calculates the heuristic value for h
+ * 	for each possible move, where h represents the sum of the distances of
+ * 	each tile out of place, and the function g which represents the cost of the
+ *  path from the start point.
+ * The program then calculates f as the sum of g and h, associates this f
+ * 	with the theoretical board state, and considers all potential moves.
+ * It selects the move with the lowest f, and uses the A* algorithm to
+ * 	traverse potential moves until the puzzle is solved. In the event that
+ * 	the puzzle is unsolvable, an error message is printed to standard output.
+ * 
+ * For the user inputted states, 0 represents the gap tile in the N-puzzle.
+ * 
+ **************************************/
+
 import javax.swing.*; // JOptionPane library
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Scanner;
+import java.util.*;
 
 public class is18285287{
 
     private static JFrame frame;
     private static int size = 8;
+    private static int dimension;
     private static ArrayList<Integer> init;
     private static ArrayList<Integer> goal;
-    private static int dimension;
 
+    /*****************************
+     * 
+     * setUpGame begins the game, calls getStateFromUserInput to populate initial and goal states
+     * 
+     *****************************/
     private static void setUpGame()
     {
+        // get initial and goal states from user input
         frame = new JFrame();
         String initMessage = "Hello, please enter a start state.";
         init = getStateFromUserInput(initMessage);
         String goalMessage = "Now, enter a final state.";
         goal = getStateFromUserInput(goalMessage);
-        dimension = (int) Math.sqrt(size+1);
 
+        // define dimension based on size
+        dimension = (int) Math.sqrt(size+1);
     }
 
+    /*****************************
+     * 
+     * getStateFromUserInput instantiates JFrame windows and retrieves user input
+     * 
+     * @param message	string indicating what the user should enter. Shows error message if invalid input was entered
+     * 
+     * @return retVal ArrayList populated by user input
+     * 
+     *****************************/
     private static ArrayList<Integer> getStateFromUserInput(String message)
     {
         String instructions = String.format(" This should be entered as a unique sequence of the numbers 0 through %d, with 0 indicating the empty tile. " +
@@ -52,7 +96,7 @@ public class is18285287{
             }
 
             // if count != size+1, then there are not enough values in the input string
-            // if scanner.hasNextInt(), then there are too many values in the input string
+            // if scanner.hasNext(), then there are too many values in the input string
             // if !uniqueIntegers(retVal), then the input values are not unique numbers from 0 to size
             if (count != size + 1 || scanner.hasNext() || !uniqueIntegers(retVal))
             {
@@ -68,32 +112,15 @@ public class is18285287{
         return retVal;
     }
 
-    private static int calculateH(ArrayList<Integer> testState){
-        // totalDist cumulates the distance of each tile, giving h
-        int totalDist = 0;
-
-        for(int i = 1; i < testState.size(); i++){
-            // find the index of tile i in the current state
-            int curIdx = testState.indexOf(i);
-
-            // find the index of tile i in the goal state
-            int goalIdx = goal.indexOf(i);
-
-            // a piece's column is given by its index in the array % the number of columns,
-            // so number of horizontal moves is given by the difference between the current and goal columns
-            int horizMoves = Math.abs((getCol(curIdx)) - (getCol(goalIdx)));
-
-            // a piece's row is given by its index in the array / the number of rows,
-            // so number of vertical moves is given by the difference between the current and goal rows
-            int vertMoves = Math.abs((getRow(curIdx)) - (getRow(goalIdx)));
-
-            totalDist += horizMoves + vertMoves;
-
-        }
-
-        return totalDist;
-    }
-
+    /*****************************
+     * 
+     * uniqueIntegers validates that the arr is an ArrayList of unique Integers
+     * 
+     * @param 	arr	board state to test uniqueness of
+     * 
+     * @return	isValid true if arr only contains unique integers, false otherwise
+     * 
+     *****************************/
     private static boolean uniqueIntegers(ArrayList<Integer> arr)
     {
         HashSet<Integer> set = new HashSet<>();
@@ -115,79 +142,426 @@ public class is18285287{
         return isValid;
     }
 
-    public static int getRow(int idx){
+    /*****************************
+     * 
+     * calculateH performs calculation on given parameter state to estimate the heuristic value h,
+     * 	which is the total distance of all pieces in their current state to their goal state
+     * 
+     * @param 	state	the given board state for which h will be calculated
+     * 
+     * @return	totalDist heuristic h, the total distance of all pieces to their goal state from state testState
+     * 
+     *****************************/
+    private static int calculateH(ArrayList<Integer> state){
+        // totalDist accumulates the distance of each tile, giving h
+        int totalDist = 0;
+
+        for(int i = 1; i < state.size(); i++){
+            // find the index of tile i in the current state
+            int curIdx = state.indexOf(i);
+
+            // find the index of tile i in the goal state
+            int goalIdx = goal.indexOf(i);
+
+            // a piece's column is given by its index in the array % the number of columns,
+            // so number of horizontal moves is given by the difference between the current and goal columns
+            int horizMoves = Math.abs((getCol(curIdx)) - (getCol(goalIdx)));
+
+            // a piece's row is given by its index in the array / the number of rows,
+            // so number of vertical moves is given by the difference between the current and goal rows
+            int vertMoves = Math.abs((getRow(curIdx)) - (getRow(goalIdx)));
+
+            totalDist += horizMoves + vertMoves;
+
+        }
+
+        return totalDist;
+    }
+
+    /*****************************
+     * 
+     * getRow calculates the row of the given index idx based on the dimensions of the game
+     * 
+     * @param 	idx	the index of the tile to be calculated
+     * 
+     * @return	row of idx, assuming topmost row is 0
+     * 
+     *****************************/
+    private static int getRow(int idx){
         return idx / dimension;
     }
 
-    public static int getCol(int idx){
+    /*****************************
+     * 
+     * getCol calculates the column of the given index idx based on the dimensions of the game
+     * 
+     * @param 	idx	the index of the tile to be calculated
+     * 
+     * @return	column of idx, assuming leftmost column is 0
+     * 
+     *****************************/
+    private static int getCol(int idx){
         return idx % dimension;
     }
 
-    public static void getMoves(ArrayList<Integer> currentState){
-        int idx = currentState.indexOf(0);
-        int emptyRow = getRow(idx);
-        int emptyCol = getCol(idx);
-
-        // above
-        int above = emptyRow - 1; // move is legal if above >= 0
-        if(above >= 0){
-            System.out.println(currentState.get(idx - dimension) + " to the south");
-            ArrayList<Integer> heuristicList = move(currentState, idx, idx - dimension);
-            System.out.println("h: " + calculateH(heuristicList));
-        }
-
-        // below
-        int below = emptyRow + 1; // move is legal if below < dimension
-        if(below < dimension){
-            System.out.println(currentState.get(idx + dimension) + " to the north");
-            ArrayList<Integer> heuristicList = move(currentState, idx, idx + dimension);
-            System.out.println("h: " + calculateH(heuristicList));
-        }
-
-        // left
-        int left = emptyCol - 1; // move is legal if left >= 0
-        if(left >= 0){
-            System.out.println(currentState.get(idx-1) + " to the east");
-            ArrayList<Integer> heuristicList = move(currentState, idx, idx - 1);
-            System.out.println("h: " + calculateH(heuristicList));
-        }
-
-        // right
-        int right = emptyCol +1; // move is legal if right < dimension
-        if(right < dimension){
-            System.out.println(currentState.get(idx+1) + " to the west");
-            ArrayList<Integer> heuristicList = move(currentState, idx, idx + 1);
-            System.out.println("h: " + calculateH(heuristicList));
-        }
-    }
-
-    // curIdx is the current index of the 0 tile. newIdx is the new index of the 0 tile in the next move
-    private static ArrayList<Integer> move(ArrayList<Integer> currentMove, int curIdx, int newIdx)
+    /*****************************
+     * 
+     * aStarAlgorithm performs the A* algorithm given by the following steps:
+     * 	1) Priority Queues for board state nodes closed and open are created
+     * 	2) The initial state is added to the open list
+     * 	3) A loop begins which is repeated until the open list is empty. During this loop:
+     * 		a) The current state to be examined is grabbed from the open list
+     * 		b) The current state is tested, if it is the goal state the current state is returned
+     * 		c) A list containing all successors to the current board state is created, and for each successor:
+     * 			i) The open and closed lists are tested to see if this state has been found in a shorter path
+     * 			ii) So long as it has not, the successor is added to the open list with the heuristic values calculated here
+     * 		d) Then, once each successor has been added to the open list, the current state is added to the closed list
+     * 	4) Then, if the loop completes without reaching a goal state, the method returns null, indicating an unsolvable puzzle
+     * 
+     * @return	current	returns the current board state when the current board state reaches the goal state
+     * @return	null	returns null when the initial board state cannot reach the goal state
+     * 
+     *****************************/
+    private static BoardStateNode aStarAlgorithm()
     {
-        ArrayList<Integer> nextMove = new ArrayList<>(currentMove);
-        Collections.swap(nextMove, curIdx, newIdx);
-        return nextMove;
+        // customized priority queue for BoardStateNode objects
+        BSNPriorityQueue open = new BSNPriorityQueue();
+        BSNPriorityQueue closed = new BSNPriorityQueue();
+        // add initial state to the open list
+        open.add(new BoardStateNode(init, null, calculateH(init), 0));
+
+        while (!open.isEmpty())
+        {
+            // get state with lowest f off the front of the priority queue
+            BoardStateNode current = open.poll();
+            if (current.state.equals(goal))
+            {
+                // goal found
+                return current;
+            }
+
+            // else, generate successors from current
+            List<ArrayList<Integer>> successors = current.getSuccessors();
+            // iterator over successors
+            for (ArrayList<Integer> nextState : successors)
+            {
+                // g value of nextState from the current path
+                int g = current.g + 1;
+                // check if open contains this state. if it does, see if it has the lower g value
+                boolean openContainsBetterHeuristic = open.contains(nextState) && open.getNodeForState(nextState).g <= g;
+                // check if closed contains this state. if it does, see if it has the lower g value
+                boolean closedContainsBetterHeuristic = closed.contains(nextState) && closed.getNodeForState(nextState).g <= g;
+
+                // if neither the open or closed list have a better path for this state, remove it from closed and re-add it to open
+                // using the new heuristic value
+                if (!openContainsBetterHeuristic && !closedContainsBetterHeuristic)
+                {
+                    open.remove(nextState);
+                    closed.remove(nextState);
+                    open.add(new BoardStateNode(nextState, current, calculateH(nextState), g));
+                }
+            }
+            // add current to closed list
+            closed.add(current);
+        }
+        // if this reached, all possible states were searched and the solution was not found. the puzzle is therefore unsolvable
+        return null;
     }
 
-    private static void printState(ArrayList<Integer> current){
-        // TODO seriously
-        System.out.println("Initial:");
-        for(int i = 0; i <= current.size() - dimension; i+=dimension){
-            System.out.print(current.get(i) + "  ");
-            System.out.print(current.get(i+1) + "  ");
-            System.out.println(current.get(i+2) + "  ");
-//			System.out.println(current.get(i+3));
+    /*****************************
+     * 
+     * printState creates a string representing the given board state
+     * which is nicely readable by a person and represents the
+     * board state in its two-dimensional form.
+     * 
+     * @param	node	the board state which will be printed
+     * 
+     * @return	result	representation of 2d board
+     * 
+     *****************************/
+    private static String printState(BoardStateNode node)
+    {
+        String result = "H: " + node.h + ", G: " + node.g + ", F: " + node.getF() + "\n";
+        for (int i = 0; i<size+1; i+= dimension)
+        {
+            for (int j=i; j<i + dimension; j++)
+            {
+                result += node.state.get(j) + "   ";
+            }
+            result += "\n";
         }
-        System.out.println();
+        result += "\n\n";
+        return result;
     }
 
 
     public static void main(String args[])
     {
         setUpGame();
-		
-		printState(init);
-    	
-        getMoves(init);
+        BoardStateNode solution = aStarAlgorithm();
+        String printedSolution = "";
+        BoardStateNode current = solution;
+        if (current == null)
+        {
+            System.out.println("No solution.");
+        }
+        else
+        {
+            while(current!= null)
+            {
+                printedSolution = printState(current) + printedSolution;
+                current = current.prev;
+            }
+
+            System.out.println("Results: \n" + printedSolution);
+        }
+    }
+
+
+    /*****************************
+     * 
+     * A subclass BoardStateNode is created which implements Comparable, which will allow the nodes to be used in a PriorityQueue
+     * A BoardStateNode will have:
+     * 	an ArrayList state, which is the order of the pieces in the puzzle,
+     * 	a BoardStateNode prev, which is the state used to reach the given state,
+     * 	an int h, which is its heuristic h value,
+     * 	an int g, whihc is its heuristic g value.
+     * 
+     * BoardStateNode methods:
+     * 
+     * 	getSuccessors:
+     * 		generates a list of all successors for the given state, which represent potential moves.
+     * 		this only generates the possible board states, and not their heuristic values
+     * 	
+     * 	getF:
+     * 		calculates the given state's heuristic f
+     * 
+     * 	compareTo:
+     * 		when comparing BoardStateNodes, compareTo will only compare them based on their heuristic f
+     * 
+     * 	switchTiles:
+     * 		generates a board state where a given tile is moved to a new place
+     * 
+     *****************************/
+    public static class BoardStateNode implements Comparable
+    {
+        public ArrayList<Integer> state;
+        public BoardStateNode prev; // previous state -> used to trace path from init to goal
+        public int h;
+        public int g;
+
+        public BoardStateNode(ArrayList<Integer> state, BoardStateNode prev, int h, int g)
+        {
+            this.state = state;
+            this.prev = prev;
+            this.h= h;
+            this.g= g;
+        }
+
+        /*****************************
+         * 
+	     * 	generates a list of all successors for the given state, which represent potential moves.
+	     * 	this only generates the possible board states, and not their heuristic values
+	     *  @return list	list of board states which can be reached from the given board state
+	     * 
+         *****************************/
+        public List<ArrayList<Integer>> getSuccessors()
+        {
+            int emptyIdx = state.indexOf(0);
+            int emptyRow = getRow(emptyIdx);
+            int emptyCol = getCol(emptyIdx);
+
+            List<ArrayList<Integer>> list = new ArrayList<>();
+
+            // above
+            if(emptyRow - 1 >= 0)
+            {
+                ArrayList<Integer> succ = switchTiles(state, emptyIdx, emptyIdx - dimension);
+                if (this.prev == null || !this.prev.state.equals(succ))
+                {
+                    list.add(succ);
+                }
+            }
+
+            // below
+            if(emptyRow + 1 < dimension)
+            {
+                ArrayList<Integer> succ = switchTiles(state, emptyIdx, emptyIdx + dimension);
+                if (this.prev == null || !this.prev.state.equals(succ))
+                {
+                    list.add(succ);
+                }
+            }
+
+            // left
+            if(emptyCol - 1 >= 0)
+            {
+                ArrayList<Integer> succ = switchTiles(state, emptyIdx, emptyIdx - 1);
+                if (this.prev== null || !this.prev.state.equals(succ))
+                {
+                    list.add(succ);
+                }
+            }
+
+            // right
+            if(emptyCol +1 < dimension)
+            {
+                ArrayList<Integer> succ = switchTiles(state, emptyIdx, emptyIdx + 1);
+                if (this.prev == null || !this.prev.state.equals(succ))
+                {
+                    list.add(succ);
+                }
+            }
+
+            return list;
+        }
+
+        /*****************************
+	     * 	
+	     * 	calculates the given state's heuristic f
+	     * 	@return	f: sum of h and g
+	     * 
+         *****************************/
+        public int getF()
+        {
+            return h+g;
+        }
+
+        /*****************************
+         * 
+	     * 	when comparing BoardStateNodes, compareTo will only compare them based on their heuristic f
+	     * 	@param	x	the board state that the current state, y, will be compared to
+	     * 	@return	the value 0 if y == x;a value less than 0 if y is less than x; and a value greater than 0 if y is greater than x
+         * 
+         *****************************/
+        public int compareTo(Object x)
+        {
+
+            return Integer.compare(this.getF(), ((BoardStateNode)x).getF());
+        }
+
+        /*****************************
+         * 
+	     * 	generates a board state where a given tile is moved to a new place
+	     * 	@param	currentMove	the board state before a move is made
+	     * 	@param	curIdx		the index of the tile which will be moved
+	     * 	@param	newIdx		the index of the new location of the tile
+	     * 	@return	nextMove	a board state where the title at index curIdx has been moved to the index newIdx
+         * 
+         *****************************/
+        private ArrayList<Integer> switchTiles(ArrayList<Integer> currentMove, int curIdx, int newIdx)
+        {
+            ArrayList<Integer> nextMove = new ArrayList<>(currentMove);
+            Collections.swap(nextMove, curIdx, newIdx);
+            return nextMove;
+        }
+    }
+
+    /*****************************
+     * 
+     * A subclass BSNPriorityQueue is created which implements PriorityQueue
+     * which will allow BoardStateNode objects to be stored in a way conducive to the open and closed lists
+     * in the A* algorithm.
+     * 
+     * A BSNPriorityQueue will be a PriorityQueue.
+     * 
+     * BSNPriorityQueue methods:
+     * 
+     * 	contains:
+     * 		checks the given BSNPriorityQueue to see if it contains the parameterized board state
+     * 	
+     * 	getNodeForState:
+     * 		searches the BSNPriorityQueue for a board state, and returns it if it exists. Otherwise, returns null
+     * 
+     * 	remove:
+     * 		removes a BoardStateNode with a given state from the BSNPriorityQueue
+     * 
+     *****************************/
+    public static class BSNPriorityQueue extends PriorityQueue<BoardStateNode>
+    {
+
+        // constructor
+        public BSNPriorityQueue()
+        {
+            new PriorityQueue<>();
+        }
+
+        /*****************************
+	     * 	
+	     * 	checks the given BSNPriorityQueue to see if it contains the parameterized board state
+	     * 	@param	state	the board state to test if it exists in the BSNPriority Queue
+	     * 	@return	true or false, true if the queue contains the state, false otherwise
+	     * 
+         *****************************/
+        public boolean contains(ArrayList<Integer> state)
+        {
+            Iterator it = this.iterator();
+            if (state == null)
+            {
+                return false;
+            }
+            while(it.hasNext())
+            {
+                BoardStateNode node = (BoardStateNode) it.next();
+                if (node != null && node.state != null && node.state.equals(state))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /*****************************
+	     * 	
+	     * 	searches the BSNPriorityQueue for a board state, and returns it if it exists. Otherwise, returns null
+	     * 	@param	state	the board state that will be searched for
+	     * 	@return	node	the first BoardStateNode in the BSNPriorityQueue with the board state
+	     * 	@return	null otherwise
+	     * 
+         *****************************/
+        public BoardStateNode getNodeForState(ArrayList<Integer> state)
+        {
+            Iterator it = this.iterator();
+            if (state == null)
+            {
+                return null;
+            }
+            while(it.hasNext())
+            {
+                BoardStateNode node = (BoardStateNode) it.next();
+                if (node != null && node.state != null && node.state.equals(state))
+                {
+                    return node;
+                }
+            }
+            return null;
+        }
+
+        /*****************************
+	     * 	
+	     * 	removes a BoardStateNode with a given state from the BSNPriorityQueue
+	     * 	@param state	the board state whose BoardStateNode will be removed
+	     * 	@return	true when the node was found and removed
+	     * 	@return	false otherwise
+	     * 
+         *****************************/
+        public boolean remove(ArrayList<Integer> state)
+        {
+            Iterator it = this.iterator();
+            if (state == null)
+            {
+                return false;
+            }
+            while(it.hasNext())
+            {
+                BoardStateNode node = (BoardStateNode) it.next();
+                if (node != null && node.state != null && node.state.equals(state))
+                {
+                    this.remove(node);
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 }
