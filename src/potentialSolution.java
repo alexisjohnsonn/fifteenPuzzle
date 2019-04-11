@@ -177,7 +177,16 @@ public class potentialSolution{
         {
             for (int j=i; j<i + dimension; j++)
             {
-                result += node.state.get(j) + "   ";
+                int val = node.state.get(j);
+                if ( val / 10 == 0)
+                {
+                    result += val + "   ";
+                }
+                else
+                {
+                    result += val + "  ";
+                }
+
             }
             result += "\n";
         }
