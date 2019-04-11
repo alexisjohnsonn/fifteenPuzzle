@@ -58,8 +58,7 @@ public class is18285287{
     private static void setUpGame()
     {
         frame = new JFrame();
-        String sizeMessage = "Hello, please enter the number corresponding to which puzzle size you would like to solve (8 or 15)";
-        getSizeFromUserInput(sizeMessage);
+        getSizeFromUserInput();
         String initMessage = "Please enter a start state.";
         init = getStateFromUserInput(initMessage);
         String goalMessage = "Now, enter a final state.";
@@ -125,14 +124,12 @@ public class is18285287{
 
     /*****************************
      *
-     * getSizeFromUserInput instantiates JFrame window that allows user to choose puzzle size
-     *
-     * @param message	string indicating what the user should enter. Shows error message if invalid input was entered
+     * getSizeFromUserInput instantiates JFrame window that allows user to choose puzzle size.
      *
      *****************************/
-    private static void getSizeFromUserInput(String message)
+    private static void getSizeFromUserInput()
     {
-        String input = JOptionPane.showInputDialog(frame, message);
+        String input = JOptionPane.showInputDialog(frame, "Hello, please enter the number corresponding to which puzzle size you would like to solve (8 or 15)");
 
         // input has not yet been validated
         boolean inputValidated = false;
@@ -147,12 +144,14 @@ public class is18285287{
             if (scanner.hasNextInt())
             {
                 int val = scanner.nextInt();
+                // if this was the only value entered AND it equals 8 or 15, the input is valid
                 if (!scanner.hasNext() && (val == 8 || val == 15))
                 {
                     inputValidated = true;
                     size = val;
                 }
             }
+            // if invalid input, ask the user for new input
             if (!inputValidated)
             {
                 input = JOptionPane.showInputDialog(frame, "Your input was not valid. Please re-enter either 8 or 15 for your puzzle size.");
@@ -263,7 +262,7 @@ public class is18285287{
      * 			i) The open and closed lists are tested to see if this state has been found in a shorter path
      * 			ii) So long as it has not, the successor is added to the open list with the heuristic values calculated here
      * 		d) Then, once each successor has been added to the open list, the current state is added to the closed list
-     * 	4) Then, if the loop completes without reaching a goal state, the method returns null, indicating an unsolvable puzzle
+     * 	4) If the loop completes without reaching a goal state, the method returns null, indicating an unsolvable puzzle
      *
      * @return	current	returns the current board state when the current board state reaches the goal state
      * @return	null	returns null when the initial board state cannot reach the goal state
@@ -289,7 +288,7 @@ public class is18285287{
 
             // else, generate successors from current
             List<ArrayList<Integer>> successors = current.getSuccessors();
-            // iterator over successors
+            // iterate over successors
             for (ArrayList<Integer> nextState : successors)
             {
                 // g value of nextState from the current path
@@ -355,6 +354,7 @@ public class is18285287{
         }
         else
         {
+            // iterate through each nodes previous state to construct the path from init to goal
             while(current!= null)
             {
                 printedSolution = printState(current) + printedSolution;
@@ -371,9 +371,9 @@ public class is18285287{
      * A subclass BoardStateNode is created which implements Comparable, which will allow the nodes to be used in a PriorityQueue
      * A BoardStateNode will have:
      * 	an ArrayList state, which is the order of the pieces in the puzzle,
-     * 	a BoardStateNode prev, which is the state used to reach the given state,
+     * 	a BoardStateNode prev, which is the state of this node's parent,
      * 	an int h, which is its heuristic h value,
-     * 	an int g, whihc is its heuristic g value.
+     * 	an int g, which is its heuristic g value.
      *
      * BoardStateNode methods:
      *
@@ -424,7 +424,9 @@ public class is18285287{
             // above
             if(emptyRow - 1 >= 0)
             {
+                // see what the state would be if we switched 0 with the tile above it
                 ArrayList<Integer> succ = switchTiles(state, emptyIdx, emptyIdx - dimension);
+                // confirm that this isn't the move we just made (i.e. switching a piece back to where it just was)
                 if (this.prev == null || !this.prev.state.equals(succ))
                 {
                     list.add(succ);
@@ -434,6 +436,7 @@ public class is18285287{
             // below
             if(emptyRow + 1 < dimension)
             {
+                // see what the state would be if we switched 0 with the tile below it
                 ArrayList<Integer> succ = switchTiles(state, emptyIdx, emptyIdx + dimension);
                 if (this.prev == null || !this.prev.state.equals(succ))
                 {
@@ -444,6 +447,7 @@ public class is18285287{
             // left
             if(emptyCol - 1 >= 0)
             {
+                // see what the state would be if we switched 0 with the tile to the left
                 ArrayList<Integer> succ = switchTiles(state, emptyIdx, emptyIdx - 1);
                 if (this.prev== null || !this.prev.state.equals(succ))
                 {
@@ -454,6 +458,7 @@ public class is18285287{
             // right
             if(emptyCol +1 < dimension)
             {
+                // see what the state would be if we switched 0 with the tile to the right
                 ArrayList<Integer> succ = switchTiles(state, emptyIdx, emptyIdx + 1);
                 if (this.prev == null || !this.prev.state.equals(succ))
                 {
@@ -507,9 +512,9 @@ public class is18285287{
 
     /*****************************
      *
-     * A subclass BSNPriorityQueue is created which implements PriorityQueue
-     * which will allow BoardStateNode objects to be stored in a way conducive to the open and closed lists
-     * in the A* algorithm.
+     * A subclass BSNPriorityQueue is created which implements PriorityQueue.
+     * This will allow BoardStateNode objects to be stored in a way conducive to the open and closed lists
+     * in the A* algorithm. 
      *
      * A BSNPriorityQueue will be a PriorityQueue.
      *
